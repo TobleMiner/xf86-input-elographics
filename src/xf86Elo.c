@@ -89,7 +89,7 @@ static Model SupportedModels[] =
  ***************************************************************************
  */
 #define ELO_MAX_TRIALS	3		/* Number of timeouts waiting for a	*/
-					/* pending reply.			*/
+          /* pending reply.			*/
 #define ELO_MAX_WAIT		100000	/* Max wait time for a reply (microsec)	*/
 #define ELO_UNTOUCH_DELAY	5	/* 100 ms				*/
 #define ELO_REPORT_DELAY	1	/* 40 ms or 25 motion reports/s		*/
@@ -112,7 +112,7 @@ static Model SupportedModels[] =
 
 #define ELO_SYNC_BYTE		'U'	/* Sync byte. First of a packet.	*/
 #define ELO_TOUCH		'T'	/* Report of touchs and motions. Not	*
-					 * used by 2310.			*/
+           * used by 2310.			*/
 #define ELO_OWNER		'O'	/* Report vendor name.			*/
 #define ELO_ID			'I'	/* Report of type and features.		*/
 #define ELO_MODE		'M'	/* Set current operating mode.		*/
@@ -242,24 +242,24 @@ typedef struct _EloPrivateRec {
  */
 static Bool
 xf86EloGetPacket(unsigned char	*buffer,
-		 int		*buffer_p,
-		 int		*checksum,
-		 int		fd)
+     int		*buffer_p,
+     int		*checksum,
+     int		fd)
 {
   int	num_bytes;
   Bool	ok;
 
   DBG(4, ErrorF("Entering xf86EloGetPacket with checksum == %d and buffer_p == %d\n",
-		*checksum, *buffer_p));
+    *checksum, *buffer_p));
 
   /*
    * Try to read enough bytes to fill up the packet buffer.
    */
   DBG(4, ErrorF("buffer_p is %d, Trying to read %d bytes from link\n",
-		*buffer_p, ELO_PACKET_SIZE - *buffer_p));
+    *buffer_p, ELO_PACKET_SIZE - *buffer_p));
   SYSCALL(num_bytes = read(fd,
-			   (char *) (buffer + *buffer_p),
-			   ELO_PACKET_SIZE - *buffer_p));
+         (char *) (buffer + *buffer_p),
+         ELO_PACKET_SIZE - *buffer_p));
 
   /*
    * Okay, give up.
@@ -279,7 +279,7 @@ xf86EloGetPacket(unsigned char	*buffer,
        * No match, shift data one byte toward the start of the buffer.
        */
       ErrorF("Elographics: Dropping one byte in an attempt to synchronize: '%c' 0x%X\n",
-	     buffer[0], buffer[0]);
+       buffer[0], buffer[0]);
       memcpy(&buffer[0], &buffer[1], num_bytes-1);
     }
     else {
@@ -287,9 +287,9 @@ xf86EloGetPacket(unsigned char	*buffer,
        * Compute checksum in assembly buffer.
        */
       if (*buffer_p < ELO_PACKET_SIZE-1) {
-	*checksum = *checksum + buffer[*buffer_p];
-	*checksum = *checksum % 256;
-	DBG(4, ErrorF(" 0x%X-->0x%X ", buffer[*buffer_p], *checksum));
+  *checksum = *checksum + buffer[*buffer_p];
+  *checksum = *checksum % 256;
+  DBG(4, ErrorF(" 0x%X-->0x%X ", buffer[*buffer_p], *checksum));
       }
       (*buffer_p)++;
     }
@@ -361,9 +361,9 @@ xf86EloReadInput(InputInfoPtr	pInfo)
    */
   do {
       if(xf86EloGetPacket(priv->packet_buf,
-		       &priv->packet_buf_p,
-		       &priv->checksum,
-		       pInfo->fd) != Success)
+           &priv->packet_buf_p,
+           &priv->checksum,
+           pInfo->fd) != Success)
           continue;
 
       /*
@@ -426,7 +426,7 @@ xf86EloReadInput(InputInfoPtr	pInfo)
  */
 static Bool
 xf86EloSendPacket(unsigned char	*packet,
-		  int		fd)
+      int		fd)
 {
   int	i, result;
   int	sum = ELO_INIT_CHECKSUM;
@@ -439,8 +439,8 @@ xf86EloSendPacket(unsigned char	*packet,
   packet[ELO_PACKET_SIZE-1] = sum;
 
   DBG(4, ErrorF("Sending packet : 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X \n",
-		packet[0], packet[1], packet[2], packet[3], packet[4],
-		packet[5], packet[6], packet[7], packet[8], packet[9]));
+    packet[0], packet[1], packet[2], packet[3], packet[4],
+    packet[5], packet[6], packet[7], packet[8], packet[9]));
   SYSCALL(result = write(fd, packet, ELO_PACKET_SIZE));
   if (result != ELO_PACKET_SIZE) {
     DBG(5, ErrorF("System error while sending to Elographics touchscreen.\n"));
@@ -469,8 +469,8 @@ xf86EloSendPacket(unsigned char	*packet,
 
 static Bool
 xf86EloWaitReply(unsigned char	type,
-		 unsigned char	*reply,
-		 int		fd)
+     unsigned char	*reply,
+     int		fd)
 {
   Bool			ok;
   int			i, result;
@@ -495,8 +495,8 @@ xf86EloWaitReply(unsigned char	type,
        * might be a 2310.
        */
       if (ok == Success && reply[1] != type && type != ELO_PARAMETER) {
-	DBG(3, ErrorF("Wrong reply received\n"));
-	ok = !Success;
+  DBG(3, ErrorF("Wrong reply received\n"));
+  ok = !Success;
       }
     }
     else {
@@ -530,12 +530,12 @@ xf86EloWaitAck(int	fd)
   if (xf86EloWaitReply(ELO_ACK, packet, fd) == Success) {
     for (i = 0, nb_errors = 0; i < 4; i++) {
       if (packet[2 + i] != '0') {
-	nb_errors++;
+  nb_errors++;
       }
     }
     if (nb_errors != 0) {
       DBG(2, ErrorF("Elographics acknowledge packet reports %d errors\n",
-		    nb_errors));
+        nb_errors));
     }
     return Success;
     /*    return (nb_errors < 4) ? Success : !Success;*/
@@ -560,8 +560,8 @@ xf86EloWaitAck(int	fd)
  */
 static Bool
 xf86EloSendQuery(unsigned char	*request,
-		 unsigned char	*reply,
-		 int		fd)
+     unsigned char	*reply,
+     int		fd)
 {
   Bool			ok;
 
@@ -590,7 +590,7 @@ xf86EloSendQuery(unsigned char	*request,
  */
 static Bool
 xf86EloSendControl(unsigned char	*control,
-		   int			fd)
+       int			fd)
 {
   if (xf86EloSendPacket(control, fd) == Success) {
     return xf86EloWaitAck(fd);
@@ -611,7 +611,7 @@ xf86EloSendControl(unsigned char	*control,
  */
 static void
 xf86EloPrintIdent(unsigned char	*packet,
-		  EloPrivatePtr	priv)
+      EloPrivatePtr	priv)
 {
   xf86Msg(X_PROBED, "Elographics touchscreen is a ");
   switch(packet[2]) {
@@ -680,7 +680,7 @@ xf86EloPrintIdent(unsigned char	*packet,
 
 static void
 xf86EloPtrControl(DeviceIntPtr	dev,
-		  PtrCtrl	*ctrl)
+      PtrCtrl	*ctrl)
 {
 }
 
@@ -695,7 +695,7 @@ xf86EloPtrControl(DeviceIntPtr	dev,
  */
 static Bool
 xf86EloControl(DeviceIntPtr	dev,
-	       int		mode)
+         int		mode)
 {
   InputInfoPtr	pInfo = (InputInfoPtr) dev->public.devicePrivate;
   EloPrivatePtr		priv = (EloPrivatePtr)(pInfo->private);
@@ -712,8 +712,8 @@ xf86EloControl(DeviceIntPtr	dev,
       DBG(2, ErrorF("Elographics touchscreen init...\n"));
 
       if (priv->screen_no >= screenInfo.numScreens ||
-	  priv->screen_no < 0) {
-	priv->screen_no = 0;
+    priv->screen_no < 0) {
+  priv->screen_no = 0;
       }
       priv->screen_width = screenInfo.screens[priv->screen_no]->width;
       priv->screen_height = screenInfo.screens[priv->screen_no]->height;
@@ -722,17 +722,17 @@ xf86EloControl(DeviceIntPtr	dev,
        * Device reports button press for up to 1 button.
        */
       if (InitButtonClassDeviceStruct(dev, 1, &btn_label, map) == FALSE) {
-	ErrorF("Unable to allocate Elographics touchscreen ButtonClassDeviceStruct\n");
-	return !Success;
+  ErrorF("Unable to allocate Elographics touchscreen ButtonClassDeviceStruct\n");
+  return !Success;
       }
 
       if (InitFocusClassDeviceStruct(dev) == FALSE) {
-	ErrorF("Unable to allocate Elographics touchscreen FocusClassDeviceStruct\n");
-	return !Success;
+  ErrorF("Unable to allocate Elographics touchscreen FocusClassDeviceStruct\n");
+  return !Success;
       }
       if (InitPtrFeedbackClassDeviceStruct(dev, xf86EloPtrControl) == FALSE) {
-	  ErrorF("unable to init ptr feedback\n");
-	  return !Success;
+    ErrorF("unable to init ptr feedback\n");
+    return !Success;
       }
       /*
        * Device reports motions on 2 axes in absolute coordinates.
@@ -742,30 +742,30 @@ xf86EloControl(DeviceIntPtr	dev,
        * screen to fit one meter.
        */
       if (InitValuatorClassDeviceStruct(dev, 2, axis_labels,
-					GetMotionHistorySize(), Absolute) == FALSE) {
-	ErrorF("Unable to allocate Elographics touchscreen ValuatorClassDeviceStruct\n");
-	return !Success;
+          GetMotionHistorySize(), Absolute) == FALSE) {
+  ErrorF("Unable to allocate Elographics touchscreen ValuatorClassDeviceStruct\n");
+  return !Success;
       }
       else {
-	/* I will map coordinates myself */
-	InitValuatorAxisStruct(dev, 0,
-			       axis_labels[0],
-			       priv->eloshm->min_x, priv->eloshm->max_x,
-			       9500,
-			       0     /* min_res */,
-			       9500  /* max_res */,
-			       Absolute);
-	InitValuatorAxisStruct(dev, 1,
-			       axis_labels[1],
-			       priv->eloshm->min_y, priv->eloshm->max_y,
-			       10500,
-			       0     /* min_res */,
-			       10500 /* max_res */,
-			       Absolute);
+  /* I will map coordinates myself */
+  InitValuatorAxisStruct(dev, 0,
+             axis_labels[0],
+             priv->eloshm->min_x, priv->eloshm->max_x,
+             9500,
+             0     /* min_res */,
+             9500  /* max_res */,
+             Absolute);
+  InitValuatorAxisStruct(dev, 1,
+             axis_labels[1],
+             priv->eloshm->min_y, priv->eloshm->max_y,
+             10500,
+             0     /* min_res */,
+             10500 /* max_res */,
+             Absolute);
       }
 
       if (InitFocusClassDeviceStruct(dev) == FALSE) {
-	ErrorF("Unable to allocate Elographics touchscreen FocusClassDeviceStruct\n");
+  ErrorF("Unable to allocate Elographics touchscreen FocusClassDeviceStruct\n");
       }
 
       /*
@@ -786,8 +786,8 @@ xf86EloControl(DeviceIntPtr	dev,
       DBG(2, ErrorF("Elographics touchscreen opening : %s\n", priv->input_dev));
       pInfo->fd = xf86OpenSerial(pInfo->options);
       if (pInfo->fd < 0) {
-	ErrorF("Unable to open Elographics touchscreen device");
-	return !Success;
+  ErrorF("Unable to open Elographics touchscreen device");
+  return !Success;
       }
 
       if (priv->model != MODEL_SUNIT_D)
@@ -869,7 +869,7 @@ xf86EloControl(DeviceIntPtr	dev,
     DBG(2, ErrorF("Elographics touchscreen close...\n"));
     dev->public.on = FALSE;
     if (pInfo->fd >= 0) {
-	xf86RemoveEnabledDevice(pInfo);
+  xf86RemoveEnabledDevice(pInfo);
     }
     SYSCALL(close(pInfo->fd));
     pInfo->fd = -1;
@@ -911,14 +911,14 @@ xf86EloAllocate(InputDriverPtr drv, InputInfoPtr pInfo)
     }
 
     if (ftruncate(fd, sizeof(EloShmRec)) != 0) {
-			xf86Msg(X_ERROR, "Elographics: Failed to truncate memory region\n");
-			shm_unlink(SHM_ELOGRAPHICS_NAME);
-			return 0;
-		}
+      xf86Msg(X_ERROR, "Elographics: Failed to truncate memory region\n");
+      shm_unlink(SHM_ELOGRAPHICS_NAME);
+      return 0;
+    }
 
     if ( (priv->eloshm = mmap(NULL, sizeof(EloShmRec), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) < 0 ) {
       xf86Msg(X_ERROR, "Elographics: Failed to map memory\n");
-			shm_unlink(SHM_ELOGRAPHICS_NAME);
+      shm_unlink(SHM_ELOGRAPHICS_NAME);
       return 0;
     }
   } else {
@@ -957,8 +957,8 @@ xf86EloAllocate(InputDriverPtr drv, InputInfoPtr pInfo)
 
 static void
 xf86EloUninit(InputDriverPtr	drv,
-	      InputInfoPtr	pInfo,
-	      int flags)
+        InputInfoPtr	pInfo,
+        int flags)
 {
   EloPrivatePtr		priv = (EloPrivatePtr) pInfo->private;
 
@@ -988,8 +988,8 @@ char *default_options[] = {
 
 static int
 xf86EloInit(InputDriverPtr	drv,
-	    InputInfoPtr	pInfo,
-	    int			flags)
+      InputInfoPtr	pInfo,
+      int			flags)
 {
   EloPrivatePtr		priv=NULL;
   const char		*str;
@@ -1009,13 +1009,13 @@ xf86EloInit(InputDriverPtr	drv,
   str = xf86SetStrOption(pInfo->options, "Device", NULL);
   if (!str) {
     xf86Msg(X_ERROR, "%s: No Device specified in Elographics module config.\n",
-	    pInfo->name);
+      pInfo->name);
     return BadValue;
   } else {
       pInfo->fd = xf86OpenSerial(pInfo->options);
       if (pInfo->fd < 0) {
-	xf86Msg(X_ERROR, "%s: Unable to open Elographics touchscreen device %s", pInfo->name, str);
-	return BadValue;
+  xf86Msg(X_ERROR, "%s: Unable to open Elographics touchscreen device %s", pInfo->name, str);
+  return BadValue;
       }
       xf86CloseSerial(pInfo->fd);
       pInfo->fd = -1;
