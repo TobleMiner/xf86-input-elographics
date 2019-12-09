@@ -63,6 +63,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <stdbool.h>
 
 /**
  * models to be treated specially.
@@ -193,6 +194,8 @@ typedef struct _EloShmRec {
   int		min_y;            /* Minimum y reported by calibration         */
   int		max_y;            /* Maximum y                                 */
   int		swap_axes;        /* Swap X an Y axes if != 0                  */
+  bool		invert_x;
+  bool		invert_y;
   int		untouch_delay;    /* Delay before reporting an untouch (in ms) */
   int		report_delay;     /* Delay between touch report packets        */
 }  EloShmRec, *EloShmPtr;
@@ -373,6 +376,14 @@ xf86EloReadInput(InputInfoPtr	pInfo)
           cur_x = WORD_ASSEMBLY(priv->packet_buf[3], priv->packet_buf[4]);
           cur_y = WORD_ASSEMBLY(priv->packet_buf[5], priv->packet_buf[6]);
           state = priv->packet_buf[2] & 0x07;
+
+          if (priv->eloshm->invert_y) {
+            cur_y = priv->eloshm->max_y - cur_y + priv->eloshm->min_y;
+          }
+
+          if (priv->eloshm->invert_x) {
+            cur_x = priv->eloshm->max_x - cur_x + priv->eloshm->min_x;
+          }
 
           priv->eloshm->cur_x = cur_x;
           priv->eloshm->cur_y = cur_y;
@@ -1042,6 +1053,14 @@ xf86EloInit(InputDriverPtr	drv,
   priv->eloshm->swap_axes = xf86SetBoolOption(pInfo->options, "SwapXY", 0);
   if (priv->eloshm->swap_axes) {
     xf86Msg(X_CONFIG, "Elographics device will work with X and Y axes swapped\n");
+  }
+  priv->eloshm->invert_x = xf86SetBoolOption(pInfo->options, "InvertX", 0);
+  if (priv->eloshm->invert_x) {
+    xf86Msg(X_CONFIG, "Elographics device will work with X axis inverted\n");
+  }
+  priv->eloshm->invert_y = xf86SetBoolOption(pInfo->options, "InvertY", 0);
+  if (priv->eloshm->invert_y) {
+    xf86Msg(X_CONFIG, "Elographics device will work with Y axis inverted\n");
   }
   debug_level = xf86SetIntOption(pInfo->options, "DebugLevel", 0);
   if (debug_level) {
