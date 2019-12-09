@@ -32,8 +32,8 @@ AM_CFLAGS = $(XORG_CFLAGS)
 
 @DRIVER_NAME@_drv_la_SOURCES = xf86Elo.c
 
-bin_PROGRAMS = calibrate_xf86elo
+#bin_PROGRAMS = calibrate_xf86elo
 
-calibrate_xf86elo_SOURCES = calibrate_xf86elo.cpp
-calibrate_xf86elo_CPPFLAGS = $(shell pkg-config --cflags QtGui)
-calibrate_xf86elo_LDADD = -lQtGui -lrt
+#calibrate_xf86elo_SOURCES = calibrate_xf86elo.cpp
+#calibrate_xf86elo_CPPFLAGS = $(shell pkg-config --cflags QtGui)
+#calibrate_xf86elo_LDADD = -lQtGui -lrt
