@@ -896,24 +896,24 @@ xf86EloAllocate(InputDriverPtr drv, InputInfoPtr pInfo)
     int fd = shm_open(SHM_ELOGRAPHICS_NAME, O_CREAT|O_RDWR, S_IRWXU|S_IRWXG);
     if (fd<0) {
       xf86Msg(X_ERROR, "Elographics: Failed to create shared memory\n");
-      return NULL;
+      return 0;
     }
 
     if (ftruncate(fd, sizeof(EloShmRec)) != 0) {
 			xf86Msg(X_ERROR, "Elographics: Failed to truncate memory region\n");
 			shm_unlink(SHM_ELOGRAPHICS_NAME);
-			return NULL;
+			return 0;
 		}
 
     if ( (priv->eloshm = mmap(NULL, sizeof(EloShmRec), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) < 0 ) {
       xf86Msg(X_ERROR, "Elographics: Failed to map memory\n");
 			shm_unlink(SHM_ELOGRAPHICS_NAME);
-      return NULL;
+      return 0;
     }
   } else {
     priv->eloshm = malloc(sizeof(EloShmRec));
     if (!priv->eloshm)
-      return NULL;
+      return BadAlloc;
   }
 
   priv->input_dev = strdup(ELO_PORT);
